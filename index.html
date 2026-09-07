@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>沙邮吉他社 · 草地音乐节点歌</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5a4bd1;
+            --primary-light: #a29bfe;
+            --bg: #0f0a1a;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --text: #f0edff;
+            --text-secondary: #b8b0d6;
+            --success: #00d2d3;
+            --warning: #fdcb6e;
+            --danger: #ff6b6b;
+            --radius: 16px;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            --transition: 0.25s ease;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 12px;
+            background-image: url('images/bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 10, 26, 0.75);
+            z-index: 0;
+            backdrop-filter: blur(4px);
+        }
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 8px; }
+
+        /* ===== 头部 ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .header-brand .main-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fdcb6e, #e17055, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        .header-brand .sub-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            -webkit-text-fill-color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: var(--primary);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .badge.success {
+            background: var(--success);
+            color: #0f0a1a;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(8px);
+            white-space: nowrap;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(108, 92, 231, 0.30); }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-color: transparent;
+        }
+        .btn-primary:hover { box-shadow: 0 8px 28px rgba(108, 92, 231, 0.45); }
+        .btn-success {
+            background: var(--success);
+            color: #0f0a1a;
+            border-color: transparent;
+        }
+        .btn-success:hover { box-shadow: 0 8px 28px rgba(0, 210, 211, 0.35); }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+            border-color: transparent;
+        }
+        .btn-danger:hover { box-shadow: 0 8px 28px rgba(255, 107, 107, 0.35); }
+        .btn-warning {
+            background: var(--warning);
+            color: #0f0a1a;
+            border-color: transparent;
+        }
+        .btn-warning:hover { box-shadow: 0 8px 28px rgba(253, 203, 110, 0.35); }
+        .btn-sm { padding: 4px 12px; font-size: 12px; }
+        .btn-outline {
+            background: transparent;
+            border-color: var(--card-border);
+        }
+        .btn-outline:hover { background: var(--card-bg); }
+        .btn-master {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: #0f0a1a;
+            border-color: transparent;
+        }
+        .btn-master:hover { box-shadow: 0 8px 28px rgba(225, 112, 85, 0.35); }
+        .btn-control {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: #fff;
+            border-color: transparent;
+            animation: controlGlow 1.8s ease-in-out infinite alternate;
+            font-weight: 700;
+        }
+        .btn-control:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.6);
+        }
+        @keyframes controlGlow {
+            0% { box-shadow: 0 0 15px rgba(255, 107, 107, 0.3); }
+            100% { box-shadow: 0 0 40px rgba(255, 107, 107, 0.8); }
+        }
+
+        /* ===== 主区域 ===== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 820px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== 卡片 ===== */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 18px 20px 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            max-height: 620px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title .count {
+            background: var(--card-bg);
+            padding: 0 12px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .card-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .card-body::-webkit-scrollbar { width: 3px; }
+        .card-body::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 8px; }
+
+        /* ===== 歌曲列表 ===== */
+        .song-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            border-left: 3px solid var(--primary);
+            transition: var(--transition);
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .song-item:hover { background: rgba(255, 255, 255, 0.07); }
+        .song-item.done {
+            border-left-color: var(--success);
+            opacity: 0.6;
+        }
+        .song-item.done .song-title { text-decoration: line-through; }
+        .song-item.singing {
+            border-left-color: var(--warning);
+            background: rgba(253, 203, 110, 0.10);
+            box-shadow: 0 0 20px rgba(253, 203, 110, 0.06);
+        }
+        .song-item.queue-first {
+            border-left-color: var(--warning);
+            background: rgba(253, 203, 110, 0.08);
+        }
+        .song-item.control-time {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.12);
+            border-left-width: 5px;
+        }
+        .song-item.control-time .song-title {
+            color: #ff6b6b;
+            font-weight: 800;
+        }
+        .song-info { flex: 1; min-width: 120px; }
+        .song-title { font-weight: 600; font-size: 15px; }
+        .song-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .song-meta .requester { color: var(--primary-light); }
+        .song-meta .remark { 
+            color: var(--warning); 
+            background: rgba(253, 203, 110, 0.10);
+            padding: 0 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .song-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .status-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 12px;
+            border-radius: 40px;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--card-border);
+        }
+        .status-tag.pending { color: var(--warning); border-color: var(--warning); }
+        .status-tag.singing {
+            color: var(--warning);
+            border-color: var(--warning);
+            background: rgba(253, 203, 110, 0.15);
+        }
+        .status-tag.done { color: var(--success); border-color: var(--success); }
+        .status-tag.control { 
+            color: #ff6b6b; 
+            border-color: #ff6b6b; 
+            background: rgba(255, 107, 107, 0.15);
+            font-weight: 700;
+        }
+
+        /* ===== 表单 ===== */
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        .form-row input {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .form-row input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+        .form-row input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.20);
+        }
+        .form-row .btn { flex-shrink: 0; }
+
+        /* ===== 空状态 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon { font-size: 40px; margin-bottom: 8px; opacity: 0.5; }
+        .empty-state p { font-size: 14px; }
+
+        /* ===== 二维码弹窗 ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.70);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #1a142b;
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 30px 32px 24px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
+        }
+        .modal-box h3 { margin-bottom: 16px; font-size: 20px; }
+        .modal-box #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 8px auto 16px;
+            background: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            width: fit-content;
+        }
+        .modal-box .url-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            word-break: break-all;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 8px 0 16px;
+        }
+        .modal-box .btn { width: 100%; }
+
+        /* ===== Toast ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            pointer-events: none;
+        }
+        .toast {
+            background: rgba(30, 22, 50, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: toastIn 0.30s ease;
+            pointer-events: auto;
+        }
+        .toast.error { border-color: var(--danger); }
+        .toast.success { border-color: var(--success); }
+        .toast.control { 
+            border-color: #ff6b6b; 
+            background: rgba(255, 107, 107, 0.25);
+            font-weight: 700;
+        }
+        @keyframes toastIn {
+            0% { opacity: 0; transform: translateY(20px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ===== 底部 ===== */
+        .footer {
+            text-align: center;
+            padding: 16px 0 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            opacity: 0.7;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 8px;
+        }
+        .footer .designer { color: var(--primary-light); font-weight: 500; }
+        .area-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 40px;
+            background: rgba(108, 92, 231, 0.20);
+            color: var(--primary-light);
+        }
+        .area-badge.karaoke {
+            background: rgba(253, 203, 110, 0.15);
+            color: var(--warning);
+        }
+        .master-badge {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: #0f0a1a;
+            font-weight: 700;
+            padding: 2px 14px;
+            border-radius: 40px;
+            font-size: 12px;
+        }
+        .master-mode .card {
+            border-color: rgba(253, 203, 110, 0.25);
+        }
+
+        /* ===== 密码弹窗 ===== */
+        .password-modal .modal-box {
+            max-width: 340px;
+        }
+        .password-modal .modal-box input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+            margin: 12px 0;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+        .password-modal .modal-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.20);
+        }
+        .password-modal .modal-box .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .password-modal .modal-box .btn-group .btn {
+            flex: 1;
+        }
+
+        /* ===== 控场时间输入弹窗 ===== */
+        .control-modal .modal-box {
+            max-width: 380px;
+        }
+        .control-modal .modal-box input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+            margin: 12px 0;
+            text-align: center;
+        }
+        .control-modal .modal-box input:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.20);
+        }
+        .control-modal .modal-box .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .control-modal .modal-box .btn-group .btn {
+            flex: 1;
+        }
+
+        @media (max-width: 480px) {
+            .header-brand .main-title { font-size: 16px; }
+            .card { max-height: 460px; padding: 14px; }
+            .song-item { padding: 8px 10px; }
+            .song-title { font-size: 14px; }
+            .form-row input { min-width: 60px; padding: 8px 12px; font-size: 13px; }
+            .btn { font-size: 13px; padding: 6px 12px; }
+        }
+
+        .queue-badge {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--warning);
+            background: rgba(253, 203, 110, 0.12);
+            padding: 2px 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(253, 203, 110, 0.2);
+            margin-right: 6px;
+        }
+        .queue-badge.first {
+            background: rgba(253, 203, 110, 0.25);
+            border-color: var(--warning);
+            color: #fff;
+        }
+        .queue-badge.control-badge {
+            background: rgba(255, 107, 107, 0.25);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 二维码弹窗 -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-box">
+            <h3>📱 扫码进入</h3>
+            <div id="qrcode"></div>
+            <div class="url-text" id="qrUrlText">加载中...</div>
+            <button class="btn btn-primary" onclick="closeQR()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 密码弹窗 -->
+    <div class="modal-overlay password-modal" id="passwordModal">
+        <div class="modal-box">
+            <h3>🔐 主控验证</h3>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:4px;">请输入主控密码</p>
+            <input type="password" id="masterPasswordInput" placeholder="请输入密码" maxlength="20" />
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="closePasswordModal()">取消</button>
+                <button class="btn btn-primary" onclick="verifyPassword()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 控场时间弹窗 -->
+    <div class="modal-overlay control-modal" id="controlModal">
+        <div class="modal-box">
+            <h3>⏰ 控场时间</h3>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:4px;">输入控场内容（如：调音、休息、互动等）</p>
+            <input type="text" id="controlInput" placeholder="例如：调音中 请稍候..." maxlength="50" />
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="closeControlModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmControlTime()">⏰ 置顶控场</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="app">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="main-title">🎸 沙邮吉他社 · 草地音乐节点歌K歌</div>
+                <div class="sub-title">📡 实时同步 · 欢乐开唱</div>
+            </div>
+            <div class="header-actions">
+                <span class="badge" id="onlineBadge">● 在线</span>
+                <button class="btn btn-outline btn-sm" onclick="openPasswordModal()" id="masterToggleBtn">🎛️ 主控模式</button>
+                <button class="btn btn-outline btn-sm" onclick="showQR()">📲 扫码</button>
+                <span class="badge" id="userCountBadge">👤 0</span>
+            </div>
+        </header>
+
+        <!-- 主区域 -->
+        <div class="main-grid" id="mainGrid">
+
+            <!-- 左栏：点歌区（独立，不限量） -->
+            <div class="card" id="songListCard">
+                <div class="card-header">
+                    <div class="card-title">
+                        📋 点歌区
+                        <span class="area-badge">不限量</span>
+                        <span class="count" id="songCount">0</span>
+                    </div>
+                    <div id="masterSongActions">
+                        <!-- 主控按钮会动态渲染到这里 -->
+                    </div>
+                </div>
+                <div class="card-body" id="songListBody">
+                    <div class="empty-state">
+                        <div class="icon">🎵</div>
+                        <p>点歌区还没有歌曲</p>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="inputName" placeholder="名字或昵称" maxlength="10" />
+                    <input type="text" id="inputTitle" placeholder="歌名" maxlength="30" />
+                    <input type="text" id="inputRemark" placeholder="备注（可选）" maxlength="30" />
+                    <button class="btn btn-primary" onclick="addSong('song')">🎤 点歌</button>
+                </div>
+            </div>
+
+            <!-- 右栏：K歌区（独立，排队队列） -->
+            <div class="card" id="karaokeCard">
+                <div class="card-header">
+                    <div class="card-title">
+                        🎶 K歌区
+                        <span class="area-badge karaoke">排队中</span>
+                        <span class="count" id="karaokeCount">0</span>
+                    </div>
+                    <span id="masterIndicator"></span>
+                </div>
+                <div class="card-body" id="karaokeBody">
+                    <div id="karaokeQueue">
+                        <div class="empty-state">
+                            <div class="icon">🎤</div>
+                            <p>K歌区暂无歌曲</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="inputNameKaraoke" placeholder="你的名字或昵称" maxlength="10" />
+                    <input type="text" id="inputTitleKaraoke" placeholder="歌名" maxlength="30" />
+                    <input type="text" id="inputRemarkKaraoke" placeholder="备注（可选）" maxlength="30" />
+                    <button class="btn btn-warning" onclick="addSong('karaoke')">🎤 K歌点歌</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 底部版权 -->
+        <div class="footer">
+            <span>小程序代码设计：<span class="designer">谷雨宸</span></span>
+            <span style="margin:0 8px;">·</span>
+            <span>🎸 北京邮电大学沙邮吉他社</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  连接服务器
+        // ============================================================
+        const socket = io();
+
+        // ============================================================
+        //  全局状态
+        // ============================================================
+        const STATE = {
+            songs: [],
+            currentSongId: null,
+            masterMode: false,
+            myName: localStorage.getItem('ktv_name') || '',
+        };
+        const $ = (id) => document.getElementById(id);
+        const dom = {
+            songListBody: $('songListBody'),
+            karaokeQueue: $('karaokeQueue'),
+            songCount: $('songCount'),
+            karaokeCount: $('karaokeCount'),
+            onlineBadge: $('onlineBadge'),
+            userCountBadge: $('userCountBadge'),
+            masterToggleBtn: $('masterToggleBtn'),
+            masterIndicator: $('masterIndicator'),
+            masterSongActions: $('masterSongActions'),
+            inputName: $('inputName'),
+            inputTitle: $('inputTitle'),
+            inputRemark: $('inputRemark'),
+            inputNameKaraoke: $('inputNameKaraoke'),
+            inputTitleKaraoke: $('inputTitleKaraoke'),
+            inputRemarkKaraoke: $('inputRemarkKaraoke'),
+            qrModal: $('qrModal'),
+            qrcode: $('qrcode'),
+            qrUrlText: $('qrUrlText'),
+            mainGrid: $('mainGrid'),
+            passwordModal: $('passwordModal'),
+            masterPasswordInput: $('masterPasswordInput'),
+            controlModal: $('controlModal'),
+            controlInput: $('controlInput'),
+        };
+
+        const MASTER_PASSWORD = 'guyuchenzuishuai';
+
+        function showToast(msg, type = 'info', duration = 2500) {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(12px) scale(0.96)';
+                setTimeout(() => el.remove(), 300);
+            }, duration);
+        }
+
+        // ============================================================
+        //  Socket 事件
+        // ============================================================
+        socket.on('connect', () => {
+            dom.onlineBadge.textContent = '● 在线';
+            dom.onlineBadge.className = 'badge success';
+            showToast('已连接到服务器 🎉', 'success', 1500);
+        });
+
+        socket.on('disconnect', () => {
+            dom.onlineBadge.textContent = '● 离线';
+            dom.onlineBadge.className = 'badge';
+            showToast('连接已断开，正在重试...', 'error', 2000);
+        });
+
+        socket.on('state', (data) => {
+            STATE.songs = data.songs || [];
+            STATE.currentSongId = data.currentSongId || null;
+            dom.userCountBadge.textContent = `👤 ${data.userCount || 0}`;
+            renderAll();
+        });
+
+        socket.on('error_msg', (msg) => {
+            showToast('❌ ' + msg, 'error');
+        });
+
+        socket.on('song_added', (song) => {
+            showToast(`🎵 ${song.title} 点歌成功！`, 'success');
+        });
+
+        // ============================================================
+        //  渲染函数
+        // ============================================================
+        function renderAll() {
+            renderSongList();
+            renderKaraokeQueue();
+            updateCounts();
+            updateMasterUI();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(str).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // ===== 点歌区渲染 =====
+        function renderSongList() {
+            const list = STATE.songs.filter(s => s.area === 'song');
+            const body = dom.songListBody;
+            
+            // 主控按钮
+            if (STATE.masterMode) {
+                dom.masterSongActions.innerHTML = `
+                    <button class="btn btn-control btn-sm" onclick="openControlModal()">⏰ 控场时间</button>
+                `;
+            } else {
+                dom.masterSongActions.innerHTML = '';
+            }
+
+            if (list.length === 0) {
+                body.innerHTML = `<div class="empty-state"><div class="icon">🎵</div><p>点歌区还没有歌曲</p></div>`;
+                return;
+            }
+            const sorted = [...list].sort((a, b) => a.createdAt - b.createdAt);
+            let html = '';
+            for (const song of sorted) {
+                const isDone = song.status === 'done';
+                const statusClass = isDone ? 'done' : '';
+                const statusLabel = isDone ? '✅ 已唱' : '⏳ 待唱';
+                let actions = '';
+                const isMaster = STATE.masterMode;
+                const myName = STATE.myName.trim();
+
+                if (isMaster) {
+                    if (!isDone) actions += `<button class="btn btn-success btn-sm" onclick="markDone('${song.id}')">✅ 唱完</button>`;
+                    actions += `<button class="btn btn-danger btn-sm" onclick="removeSong('${song.id}')">✕</button>`;
+                } else {
+                    if (myName && song.requester === myName && !isDone) {
+                        actions += `<button class="btn btn-danger btn-sm" onclick="removeSong('${song.id}')">取消</button>`;
+                    }
+                }
+                if (isDone && !actions) actions = `<span style="font-size:12px;color:var(--success);">✅ 已唱</span>`;
+                if (!actions) actions = `<span style="font-size:12px;color:var(--text-secondary);">—</span>`;
+
+                const remarkHtml = song.remark ? `<span class="remark">📝 ${escapeHtml(song.remark)}</span>` : '';
+
+                html += `
+                    <div class="song-item ${statusClass}" data-id="${song.id}">
+                        <div class="song-info">
+                            <div class="song-title">${escapeHtml(song.title)}</div>
+                            <div class="song-meta">
+                                <span>🎤 ${escapeHtml(song.singer)}</span>
+                                <span class="requester">👤 ${escapeHtml(song.requester)}</span>
+                                ${remarkHtml}
+                                <span class="status-tag ${isDone ? 'done' : 'pending'}">${statusLabel}</span>
+                            </div>
+                        </div>
+                        <div class="song-actions">${actions}</div>
+                    </div>
+                `;
+            }
+            body.innerHTML = html;
+        }
+
+        // ===== K歌区渲染（待唱→正在唱→已唱） =====
+        function renderKaraokeQueue() {
+            const list = STATE.songs.filter(s => s.area === 'karaoke');
+            const container = dom.karaokeQueue;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="icon">🎤</div><p>K歌区暂无歌曲</p></div>`;
+                dom.karaokeCount.textContent = '0';
+                return;
+            }
+
+            // 分类：待唱（pending）、正在唱（singing）、已唱（done）
+            const pendingList = list.filter(s => s.status === 'pending').sort((a, b) => a.createdAt - b.createdAt);
+            const singingList = list.filter(s => s.status === 'singing');
+            const doneList = list.filter(s => s.status === 'done').sort((a, b) => a.createdAt - b.createdAt);
+
+            // 构建最终顺序：待唱（按队列） → 正在唱 → 已唱
+            const sorted = [...pendingList, ...singingList, ...doneList];
+
+            let html = '';
+            let queueIndex = 0;
+
+            // 如果有正在唱的，单独显示在顶部
+            if (singingList.length > 0) {
+                const song = singingList[0];
+                html += `
+                    <div style="background:rgba(253,203,110,0.12);border:2px solid var(--warning);border-radius:14px;padding:16px 18px;margin-bottom:14px;text-align:center;">
+                        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">🎤 正在演唱</div>
+                        <div style="font-size:22px;font-weight:700;color:#fff;">${escapeHtml(song.title)}</div>
+                        <div style="font-size:14px;color:var(--text-secondary);">${escapeHtml(song.singer)} · 点歌：${escapeHtml(song.requester)}</div>
+                        ${song.remark ? `<div style="font-size:13px;color:var(--warning);margin-top:4px;">📝 ${escapeHtml(song.remark)}</div>` : ''}
+                        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                            ${STATE.masterMode ? `<button class="btn btn-warning btn-sm" onclick="markDone('${song.id}')">✅ 唱完</button>` : ''}
+                            <span class="status-tag singing">🎶 演唱中</span>
+                        </div>
+                    </div>
+                `;
+                // 已唱从第二位开始计数
+                queueIndex = 1;
+            }
+
+            // 显示待唱队列
+            if (pendingList.length > 0) {
+                html += `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">⏳ 待唱队列 (${pendingList.length}首)</div>`;
+                for (let i = 0; i < pendingList.length; i++) {
+                    const song = pendingList[i];
+                    const isFirst = i === 0 && singingList.length === 0; // 没有正在唱时，第一首高亮
+                    const queueNum = singingList.length > 0 ? i + 1 : i;
+                    const isControl = song.isControlTime;
+
+                    let actions = '';
+                    const isMaster = STATE.masterMode;
+                    const myName = STATE.myName.trim();
+
+                    if (isMaster) {
+                        if (isFirst || singingList.length === 0 && i === 0) {
+                            actions += `<button class="btn btn-success btn-sm" onclick="startSing('${song.id}')">▶ 开唱</button>`;
+                        }
+                        actions += `<button class="btn btn-danger btn-sm" onclick="removeSong('${song.id}')">✕</button>`;
+                    } else {
+                        if (myName && song.requester === myName) {
+                            actions += `<button class="btn btn-danger btn-sm" onclick="removeSong('${song.id}')">取消</button>`;
+                        }
+                    }
+                    if (!actions) actions = `<span style="font-size:12px;color:var(--text-secondary);">—</span>`;
+
+                    const queueClass = isControl ? 'control-time' : (isFirst && singingList.length === 0 ? 'queue-first' : '');
+                    const badgeClass = isControl ? 'control-badge' : (isFirst && singingList.length === 0 ? 'first' : '');
+                    const badgeText = isControl ? '⏰ 控场' : (isFirst && singingList.length === 0 ? '🔴 下一首' : `#${queueNum + 1}`);
+                    const remarkHtml = song.remark ? `<span class="remark">📝 ${escapeHtml(song.remark)}</span>` : '';
+                    const statusLabel = isControl ? '⏰ 控场中' : '⏳ 待唱';
+
+                    html += `
+                        <div class="song-item ${queueClass}" data-id="${song.id}">
+                            <div class="song-info">
+                                <div class="song-title">
+                                    <span class="queue-badge ${badgeClass}">${badgeText}</span>
+                                    ${escapeHtml(song.title)}
+                                </div>
+                                <div class="song-meta">
+                                    <span>🎤 ${escapeHtml(song.singer)}</span>
+                                    <span class="requester">👤 ${escapeHtml(song.requester)}</span>
+                                    ${remarkHtml}
+                                    <span class="status-tag ${isControl ? 'control' : 'pending'}">${statusLabel}</span>
+                                </div>
+                            </div>
+                            <div class="song-actions">${actions}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 显示已唱列表（放在最后）
+            if (doneList.length > 0) {
+                html += `<div style="font-size:12px;color:var(--text-secondary);margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">✅ 已唱 (${doneList.length}首)</div>`;
+                for (const song of doneList) {
+                    const remarkHtml = song.remark ? `<span class="remark">📝 ${escapeHtml(song.remark)}</span>` : '';
+                    let actions = '';
+                    if (STATE.masterMode) {
+                        actions += `<button class="btn btn-danger btn-sm" onclick="removeSong('${song.id}')">✕</button>`;
+                    }
+                    if (!actions) actions = `<span style="font-size:12px;color:var(--text-secondary);">—</span>`;
+
+                    html += `
+                        <div class="song-item done" data-id="${song.id}">
+                            <div class="song-info">
+                                <div class="song-title">${escapeHtml(song.title)}</div>
+                                <div class="song-meta">
+                                    <span>🎤 ${escapeHtml(song.singer)}</span>
+                                    <span class="requester">👤 ${escapeHtml(song.requester)}</span>
+                                    ${remarkHtml}
+                                    <span class="status-tag done">✅ 已唱</span>
+                                </div>
+                            </div>
+                            <div class="song-actions">${actions}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            container.innerHTML = html;
+            dom.karaokeCount.textContent = list.length;
+        }
+
+        function updateCounts() {
+            const songList = STATE.songs.filter(s => s.area === 'song');
+            const karaokeList = STATE.songs.filter(s => s.area === 'karaoke');
+            dom.songCount.textContent = songList.length;
+            dom.karaokeCount.textContent = karaokeList.length;
+        }
+
+        function updateMasterUI() {
+            if (STATE.masterMode) {
+                dom.masterToggleBtn.textContent = '🎛️ 退出主控';
+                dom.masterToggleBtn.className = 'btn btn-master btn-sm';
+                dom.masterIndicator.innerHTML = '<span class="master-badge">👑 主控</span>';
+                dom.mainGrid.classList.add('master-mode');
+            } else {
+                dom.masterToggleBtn.textContent = '🎛️ 主控模式';
+                dom.masterToggleBtn.className = 'btn btn-outline btn-sm';
+                dom.masterIndicator.innerHTML = '';
+                dom.mainGrid.classList.remove('master-mode');
+                dom.masterSongActions.innerHTML = '';
+            }
+            // 重新渲染点歌区（更新主控按钮）
+            renderSongList();
+        }
+
+        // ============================================================
+        //  操作函数
+        // ============================================================
+        function addSong(area) {
+            let nameInput, titleInput, remarkInput;
+            if (area === 'karaoke') {
+                nameInput = dom.inputNameKaraoke;
+                titleInput = dom.inputTitleKaraoke;
+                remarkInput = dom.inputRemarkKaraoke;
+            } else {
+                nameInput = dom.inputName;
+                titleInput = dom.inputTitle;
+                remarkInput = dom.inputRemark;
+            }
+
+            const name = nameInput.value.trim() || STATE.myName;
+            const title = titleInput.value.trim();
+            const remark = remarkInput.value.trim();
+
+            if (!name) { showToast('请输入你的名字或昵称', 'error'); nameInput.focus(); return; }
+            if (!title) { showToast('请输入歌名', 'error'); titleInput.focus(); return; }
+
+            STATE.myName = name;
+            localStorage.setItem('ktv_name', name);
+
+            socket.emit('add_song', { 
+                title, 
+                singer: '🎵', 
+                requester: name, 
+                area: area,
+                remark: remark || ''
+            });
+
+            titleInput.value = '';
+            remarkInput.value = '';
+            titleInput.focus();
+        }
+
+        function startSing(id) {
+            if (!STATE.masterMode) { showToast('请先开启主控模式', 'error'); return; }
+            socket.emit('start_sing', id);
+        }
+
+        function markDone(id) {
+            if (!STATE.masterMode) { showToast('请先开启主控模式', 'error'); return; }
+            socket.emit('mark_done', id);
+            // 控场时间被删除时会有特殊处理，显示提示
+        }
+
+        // 监听控场时间结束事件
+        socket.on('control_time_ended', (data) => {
+            showToast('⏰ 控场时间已结束', 'control', 2000);
+        });
+
+        function removeSong(id) {
+            const song = STATE.songs.find(s => s.id === id);
+            if (!song) return;
+            if (!STATE.masterMode && song.requester !== STATE.myName) {
+                showToast('只能删除自己点的歌', 'error');
+                return;
+            }
+            if (song.status === 'singing') {
+                showToast('正在唱的歌曲不能删除，请先标记唱完', 'error');
+                return;
+            }
+            if (confirm(`确定要删除「${song.title}」吗？`)) {
+                socket.emit('remove_song', id);
+            }
+        }
+
+        // ============================================================
+        //  控场时间
+        // ============================================================
+        function openControlModal() {
+            if (!STATE.masterMode) {
+                showToast('请先开启主控模式', 'error');
+                return;
+            }
+            dom.controlModal.classList.add('active');
+            dom.controlInput.value = '';
+            dom.controlInput.focus();
+        }
+
+        function closeControlModal() {
+            dom.controlModal.classList.remove('active');
+            dom.controlInput.value = '';
+        }
+
+        function confirmControlTime() {
+            const content = dom.controlInput.value.trim() || '🎵 控场时间';
+            socket.emit('add_control_time', { 
+                title: content,
+                requester: '🎛️ 主控',
+                area: 'karaoke'
+            });
+            closeControlModal();
+            showToast(`⏰ 已置顶控场：${content}`, 'control', 3000);
+        }
+
+        dom.controlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') confirmControlTime();
+        });
+
+        // ============================================================
+        //  主控密码验证
+        // ============================================================
+        function openPasswordModal() {
+            if (STATE.masterMode) {
+                STATE.masterMode = false;
+                showToast('已退出主控模式', 'info', 1500);
+                renderAll();
+                return;
+            }
+            dom.passwordModal.classList.add('active');
+            dom.masterPasswordInput.value = '';
+            dom.masterPasswordInput.focus();
+        }
+
+        function closePasswordModal() {
+            dom.passwordModal.classList.remove('active');
+            dom.masterPasswordInput.value = '';
+        }
+
+        function verifyPassword() {
+            const pwd = dom.masterPasswordInput.value.trim();
+            if (pwd === MASTER_PASSWORD) {
+                STATE.masterMode = true;
+                showToast('🔐 主控模式已开启', 'success', 2000);
+                closePasswordModal();
+                renderAll();
+            } else {
+                showToast('❌ 密码错误，请重试', 'error');
+                dom.masterPasswordInput.value = '';
+                dom.masterPasswordInput.focus();
+            }
+        }
+
+        dom.masterPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verifyPassword();
+        });
+
+        // ============================================================
+        //  二维码
+        // ============================================================
+        function showQR() {
+            const modal = dom.qrModal;
+            modal.classList.add('active');
+            const port = window.location.port || '3000';
+            fetch('/get-local-ip')
+                .then(res => res.json())
+                .then(data => {
+                    const localIP = data.ip || '请查看命令行输出的IP';
+                    const url = `http://${localIP}:${port}`;
+                    dom.qrUrlText.textContent = url;
+                    generateQRCode(url);
+                })
+                .catch(() => {
+                    const url = window.location.href;
+                    dom.qrUrlText.textContent = url;
+                    generateQRCode(url);
+                    showToast('⚠️ 请确保手机和电脑在同一Wi-Fi', 'error', 3000);
+                });
+        }
+
+        function generateQRCode(url) {
+            const container = dom.qrcode;
+            container.innerHTML = '';
+            try {
+                new QRCode(container, {
+                    text: url,
+                    width: 180,
+                    height: 180,
+                    colorDark: '#1a142b',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H,
+                });
+            } catch (e) {
+                container.innerHTML = '<p style="color:#fff;">二维码加载失败，请直接复制下方链接</p>';
+            }
+        }
+
+        function closeQR() { dom.qrModal.classList.remove('active'); }
+        dom.qrModal.addEventListener('click', (e) => { if (e.target === dom.qrModal) closeQR(); });
+
+        // ============================================================
+        //  初始化
+        // ============================================================
+        dom.inputName.value = STATE.myName;
+        dom.inputNameKaraoke.value = STATE.myName;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const active = document.activeElement;
+                if (active === dom.inputName || active === dom.inputTitle || active === dom.inputRemark) {
+                    addSong('song');
+                } else if (active === dom.inputNameKaraoke || active === dom.inputTitleKaraoke || active === dom
+                    .inputRemarkKaraoke) {
+                    addSong('karaoke');
+                }
+            }
+            if (e.key === 'Escape') {
+                closeQR();
+                closePasswordModal();
+                closeControlModal();
+            }
+        });
+
+        setInterval(() => { socket.emit('ping'); }, 30000);
+
+        console.log('🎸 沙邮吉他社 · 草地音乐节点歌K歌小程序');
+        console.log('📝 代码设计：谷雨宸');
+        console.log('🔐 主控密码：guyuchenzuishuai');
+    </script>
+
+</body>
+</html>
