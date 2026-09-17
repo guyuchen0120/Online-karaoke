@@ -559,6 +559,147 @@
             border-color: #ff6b6b;
             color: #ff6b6b;
         }
+        /* ===== 底部二维码（放大版） ===== */
+        .footer {
+            text-align: center;
+            padding: 24px 0 16px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .footer-text {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .footer .designer {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        /* 社团二维码 */
+        .club-qrcode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .qr-wrapper {
+            width: 200px;
+            height: 200px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid rgba(108, 92, 231, 0.3);
+        }
+
+        .qr-wrapper:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(108, 92, 231, 0.5);
+            border-color: var(--primary);
+        }
+
+        .qr-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .qr-fallback {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .qr-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--warning);
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 12px rgba(253, 203, 110, 0.4);
+            animation: qrPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes qrPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* ===== 二维码大图弹窗 ===== */
+        .qrcode-modal-box {
+            max-width: 400px;
+            padding: 24px 24px 20px;
+        }
+
+        .qrcode-large {
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1;
+            background: #fff;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .qrcode-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .qr-large-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--warning);
+            letter-spacing: 2px;
+            margin: 12px 0 16px;
+            text-shadow: 0 0 16px rgba(253, 203, 110, 0.4);
+        }
+
+        .qrcode-modal .btn {
+            width: 100%;
+        }
+
+        /* 手机端适配 */
+        @media (max-width: 480px) {
+            .qr-wrapper {
+                width: 160px;
+                height: 160px;
+            }
+            .qr-text {
+                font-size: 13px;
+            }
+            .qrcode-large {
+                max-width: 260px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -674,10 +815,36 @@
         </div>
 
         <!-- 底部版权 -->
+        <!-- 底部 -->
         <div class="footer">
-            <span>小程序代码设计：<span class="designer">谷雨宸</span></span>
-            <span style="margin:0 8px;">·</span>
-            <span>🎸 北京邮电大学沙邮吉他社</span>
+            <div class="footer-text">
+                <span>小程序代码设计：<span class="designer">谷雨宸</span></span>
+                <span style="margin:0 8px;">·</span>
+                <span>🎸 北京邮电大学沙邮吉他社</span>
+            </div>
+            <!-- 社团二维码 -->
+            <div class="club-qrcode">
+                <div class="qr-wrapper" onclick="showQRCode()">
+                    <img src="images/qrcode.jpg" alt="沙邮吉他社二维码" 
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                    <div class="qr-fallback" style="display:none;">请将二维码图片放到<br>images/qrcode.jpg</div>
+                </div>
+                <div class="qr-text">👆 点击查看大图 · 入群即入社</div>
+            </div>
+        </div>
+
+        <!-- 二维码大图弹窗 -->
+        <div class="modal-overlay qrcode-modal" id="qrcodeModal">
+            <div class="modal-box qrcode-modal-box">
+                <h3>🎸 沙邮吉他社</h3>
+                <div class="qrcode-large">
+                    <img src="images/qrcode.jpg" alt="沙邮吉他社二维码" 
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                    <div class="qr-fallback" style="display:none;">请将二维码图片放到<br>images/qrcode.jpg</div>
+                </div>
+                <div class="qr-large-text">📱 扫码进群 · 群即入社</div>
+                <button class="btn btn-primary" onclick="closeQRCode()">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -1203,6 +1370,22 @@
         console.log('🎸 沙邮吉他社 · 草地音乐节点歌K歌小程序');
         console.log('📝 代码设计：谷雨宸');
         console.log('🔐 主控密码：guyuchenzuishuai');
+
+        // ============================================================
+        //  二维码大图查看
+        // ============================================================
+        function showQRCode() {
+            document.getElementById('qrcodeModal').classList.add('active');
+        }
+
+        function closeQRCode() {
+            document.getElementById('qrcodeModal').classList.remove('active');
+        }
+
+        // 点击背景关闭
+        document.getElementById('qrcodeModal').addEventListener('click', function(e) {
+            if (e.target === this) closeQRCode();
+        });
     </script>
 
 </body>
